@@ -47,6 +47,7 @@ export default {
         }
     },
     methods:{
+        /**封装一个可以多次使用的方法用来验证用户名密码等 */
         vali(e,reg,type,html1,html2){
             if(reg.test(type)){
                 $(e.target).next().css("color","green").html(html1);
@@ -59,7 +60,9 @@ export default {
         valiuname(e){
             var reg=/^\w{4,}$/;
             var url=`http://192.168.43.158:3000/user/uname?uname=${this.uname}`;
+            /**异步函数里面使用this给this起别名 */
             var self=this;
+            /**异步函数中先验证用户名是否存在在验证格式是否正确 */
             (async function(){
                 await new Promise(function(open){
                     self.$axios.get(url).then(result=>{
@@ -104,10 +107,12 @@ export default {
             console.log(qs.stringify({uname:this.uname,upwd:this.upwd}))
             if(this.vluname&&this.vlupwd&&this.vlemail&&this.vlphone){
                 if(this.upwd==this.cupwd){
-                    var url="http://192.168.43.158:3000/user/register";
+                    var url="/user/register";
                     var obj={uname:this.uname,upwd:this.upwd,email:this.email,phone:this.phone};
                     var self=this;
+                    /**qs模块将对象转换为字符串参数用于axios查询 */
                     this.$axios.post(url,qs.stringify(obj)).then(result=>{
+                        /**验证通过1s后跳转到登录页 */
                         if(result.data.code==1){
                             $(".prom").css("display","block");
                             setTimeout(function(){
@@ -116,6 +121,7 @@ export default {
                                 },1000)
                         }
                     })
+                    /**验证不通过并且不通过的地方获得鼠标焦点 */
                 }else{
                     $(".upwd input").focus().next().html("两次密码输入不一样").css("color","red")
                 }

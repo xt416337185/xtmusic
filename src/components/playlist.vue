@@ -69,6 +69,7 @@
                         <p>条件</p>
                     </div>
                     <div class="tags total" >
+                        <router-link to="#" data-filter="total" v-if="Object.keys(total).length<1"><span>全部</span></router-link>
                         <!-- <router-link to="#" data-filter="total"><span>全部</span></router-link> -->
                         <router-link to="#" data-filter="total" v-for="item in total" :key="item.index"><span>{{item}}</span></router-link>
                     </div>
@@ -110,12 +111,56 @@
                             </p>
                         </div>
                     </li>
+                     <li>
+                        <div class="play_btn"></div>
+                        <img src="../../static/images/recommond/304.jpg">
+                        <div class="text_container">
+                            <p class="pl_intro">歌单介绍</p>
+                            <p class="pl_amo">播放量
+                                <span>156.1</span>万
+                            </p>
+                        </div>
+                    </li>
+                     <li>
+                        <div class="play_btn"></div>
+                        <img src="../../static/images/recommond/304.jpg">
+                        <div class="text_container">
+                            <p class="pl_intro">歌单介绍</p>
+                            <p class="pl_amo">播放量
+                                <span>156.1</span>万
+                            </p>
+                        </div>
+                    </li>
+                     <li>
+                        <div class="play_btn"></div>
+                        <img src="../../static/images/recommond/304.jpg">
+                        <div class="text_container">
+                            <p class="pl_intro">歌单介绍</p>
+                            <p class="pl_amo">播放量
+                                <span>156.1</span>万
+                            </p>
+                        </div>
+                    </li>
+                     <li>
+                        <div class="play_btn"></div>
+                        <img src="../../static/images/recommond/304.jpg">
+                        <div class="text_container">
+                            <p class="pl_intro">歌单介绍</p>
+                            <p class="pl_amo">播放量
+                                <span>156.1</span>万
+                            </p>
+                        </div>
+                    </li>
                 </ul>
             </div> 
             <div class="pagination clear">
                 <ul class="clear">
                     <li><router-link to="#">上一页</router-link></li>
-                    <li><router-link to="#">1</router-link></li>
+                    <li class="active"><router-link to="#" >1</router-link></li>
+                    <li><router-link to="#">2</router-link></li>
+                    <li><router-link to="#">3</router-link></li>
+                    <li><router-link to="#">4</router-link></li>
+                    <li><router-link to="#">5</router-link></li>
                     <li><router-link to="#">下一页</router-link></li>
                 </ul>
             </div>
@@ -138,31 +183,44 @@ export default {
         change_width(e){
             e.preventDefault();
             var $elm=$(e.target);
+            /**利用冒泡在父元素上绑定方法并且判断子元素触发的标签名 */
             if($elm.prop('nodeName')==='A'){
                 var $cube=$elm.parent().parent().find('.slide_cube');
                 var filter=$elm.parent().parent().attr('data-filter');
                 var fhtml=$elm.html();
                 var cube_width=$elm[0].offsetWidth+16;
                 var left = $elm[0].offsetLeft + $elm[0].offsetParent.offsetLeft-8;
+                /**给当前点击的标签加样式并且给其他兄弟元素删除该样式 */
                 $elm.addClass('aactive').siblings().removeClass('aactive');
                 $cube.css({'left':left,'width':cube_width});
-                this.total[filter]=fhtml;  
-                this.$forceUpdate();             
+                /**判断该标签的html内容,并且给查询的数组添加或者删除查询的条件 */
+                if(fhtml!="全部"){
+                    this.total[filter]=fhtml; 
+                    /**vue对象无法检测到数组的属性的添加删除，手动调用跟新的api */ 
+                    this.$forceUpdate();
+                }else{
+                    delete this.total[filter];
+                    console.log(this.total);
+                    this.$forceUpdate();
+                }               
             }
         },
         cfilter(e){
             e.preventDefault();
             var $elm=$(e.target);
+            /**利用冒泡判断子元素触发的标签名 */
             if($elm.prop("nodeName")==="SPAN"){
                 var filter=$elm.parent().attr("data-filter");
                 var $cur=$(`.popup_tag.${filter}`);
                 var sibling=$(`.popup_tag:not(.${filter})`)
                 $elm.next().toggleClass('arrow_down').toggleClass('arrow_up');
+                /**当前元素的显示或者隐藏 */
                 if($cur.is(":visible")){
                     $cur.hide()
                 }else{
                     $cur.show()
                 }
+                /**如果其兄弟元素是显示的,隐藏该兄弟元素 并且将箭头修改方向 */
                 if(sibling.is(":visible")){
                     sibling.hide();
                     $elm.parent().siblings().children('i').toggleClass('arrow_down').toggleClass('arrow_up');
@@ -194,10 +252,11 @@ export default {
             }
         },
         tot(){
-            console.log(Object.keys(this.total).length)
-            if(Object.keys(this.total).length<1){
-                $('.tags.total').html('<router-link to="#" data-filter="total"><span>全部</span></router-link>')
-            }
+            // console.log(Object.keys(this.total).length)
+            // if(Object.keys(this.total).length<1){
+            //     $('.tags.total').html('<router-link to="#" data-filter="total"><span>全部</span></router-link>')
+            // }
+            // this.$forceUpdate();
         }
     }
 }
@@ -286,20 +345,15 @@ export default {
 .filter>.tags>a:hover>i{
     border-color: #fff;
 }
-.playlist_cont .category{
-    font-size: 1.5em;
-    font-weight: bold;
-    margin: 5px 0;
-    letter-spacing: 3px;
-    border-bottom: 2px solid #C20C0C;
-}
+
 .playlist_cont .wrapper{
   display: flex;
   flex-wrap: wrap;
+  height: 230px;
 }
 .playlist_cont .wrapper li {
-    /* opacity:0;
-    overflow: hidden; */
+    /* opacity:0;*/
+    overflow: hidden;
     position: relative;
     width: 18%;
     margin: 0 9px 30px;
@@ -347,14 +401,37 @@ export default {
     color: #666;
     font-size:0.8em;
 }
+
+.playlist_cont .text_container>.pl_amo{
+  top: 85%;  
+  color: #666;
+  font-size:0.8em;
+}
+.playlist_cont .wrapper .play_btn{
+  top: 20%;
+  left: 27%;
+  width: 100px;
+  height: 100px;
+  background-image: url(../../static/images/icons/iconall.png);
+  background-position: -8px -394px;
+  z-index: 1;
+  transform: scale(0);
+  transition: transform 0.3s linear;
+}
+/*分页 */
 .pagination{
   padding: 8px 20px;
-    border-radius:5px;
+  border-radius:5px;
 }
 
 .pagination>ul{
   float:right;
 }
+.pagination::after{
+    display:block;
+    content:"";
+    clear:both
+} 
 .pagination>ul>li{
   height: 30px; 
   line-height: 30px;

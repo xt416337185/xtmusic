@@ -73,13 +73,22 @@ export default {
     mounted(){
         this.login_bg();
     },
+    /**实例摧毁前关闭定时器 */
+    destroyed(){
+        window.cancelAnimationFrame(this.login_bgT);
+        this.login_bgT=null;
+        window.cancelAnimationFrame(this.logoMonitorT);
+        this.logoMonitorT=null;
+    },
     methods:{
+        /*绘制背景*/ 
         login_bg(){
             this.login_bgT=window.requestAnimationFrame(this.login_bg);
             this.cans=document.getElementById("login_bg");
             this.cans.width=innerWidth;
             this.cans.height=innerHeight;
             var ctx=this.cans.getContext("2d");
+            /**绘制背景大图 */
             ctx.drawImage(this.bg_pic,0,0,this.w,this.h)
             for(var i=0;i<this.num;i++){
                 if(this.alive[i]){
@@ -87,10 +96,12 @@ export default {
                     if(this.y[i]<-40){
                         this.alive[i]=false
                     }
+                    /**绘制背景动态图标 */
                     ctx.drawImage(this.pic[i],this.x[i],this.y[i],this.l[i],this.l[i])
                 }
             }
         },
+        /*初始化数据*/
         init(){
             this.red.src='../../static/images/icons/red_logo.png';
 	        this.white.src='../../static/images/icons/white_logo.png';
@@ -110,6 +121,7 @@ export default {
             }
             
         },
+        /*创建只能定时器使背景为动态*/ 
         logoMonitor(){
             this.count=0;
             this.logoMonitorT=window.requestAnimationFrame(this.logoMonitor)
@@ -122,6 +134,7 @@ export default {
                 this.logoCreate()
                 }
         },
+        /*当活动的图标小于20时在页面随机挑选一个图标创建 */
         logoCreate(){
             for(var i=0;i<this.num;i++){
                 if(!this.alive[i]){
@@ -133,23 +146,23 @@ export default {
                 }
             }
         },
+        /**图标创建位置的随机数 */
         rand(min,max){
             return Math.random()*(max-min)+min
         },
+        /**登录成功后返回首页 */
         login(){
             var msg=$('.login_outer .showMsg');
                 msg.css("display","none");
-            var url=`http://192.168.43.158:3000/user/login?uname=${this.uname}&&upwd=${this.upwd}`;
+            var url=`/user/login?uname=${this.uname}&upwd=${this.upwd}`;
             this.$axios.get(url).then(result=>{
-                if(result.data.code==1){
-                    window.cancelAnimationFrame(this.login_bgT);
-                    this.login_bgT=null;
-                    window.cancelAnimationFrame(this.logoMonitorT);
-                    this.logoMonitorT=null;
+                if(result.data.code==1){ 
                     msg.css("display","block");
                     msg.html('登录成功返回首页');
                     setTimeout(() => {
                         msg.css("display","none");
+                        /*改变store中的登录状态 */
+                        this.$store.dispatch("uplogin",true);
                         this.$router.push({path:"/index"});
                     }, 1000);
                     
@@ -159,6 +172,7 @@ export default {
                 }
             })
         },
+        /**跳转到注册页面 */
         regis(e){
             e.preventDefault();
             window.cancelAnimationFrame(this.login_bgT);
@@ -175,6 +189,7 @@ export default {
         position: relative;
         overflow: hidden;
         white-space: nowrap;
+        font-size:0
     }
     #login_bg{
         z-index:-1000;
@@ -239,7 +254,7 @@ export default {
         left: 0;
         text-align: center;
         right: 0;
-        font-size: 0.9em;
+        font-size: 0.9rem;
     }
     .login_outer .btns{
         top: 69%;
@@ -260,7 +275,7 @@ export default {
     .login_outer .help a, 
     .login_outer .otherway{
         color: rgb(188, 188, 189);
-        font-size: 0.9em;
+        font-size: 0.9rem;
     }
     .login_outer .otherway{
         height: 40px;

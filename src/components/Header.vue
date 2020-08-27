@@ -1,5 +1,5 @@
 <template>
-<div>
+<div class="container">
     <div id="header" class="header">
         <div class="logo">
             <router-link  to="">网易云音乐</router-link>
@@ -22,7 +22,7 @@
                 <router-link to="">视频投稿</router-link>
             </div>
         </div>
-        <div class="login nologin" v-if="islogin">
+        <div class="login nologin" v-if="!islogin">
             <router-link to="/login">登录</router-link>
             <i class="arr"></i>
             <ul>
@@ -72,7 +72,6 @@ import Nav from '../components/nav'
 export default {
     data(){
          return {
-            islogin:true,
         }
     },
     created(){
@@ -83,21 +82,29 @@ export default {
     },
     methods:{
         login(){
-            var url="http://192.168.43.158:3000/user/islogin"
+            var url="/user/islogin"
             this.$axios.get(url).then(result=>{
+                console.log(result)
                 if(result.data.code==1){
-                    this.islogin=false;
+                    /**登录成功改变模板中的登录状态 */
+                    this.$store.dispatch("uplogin",true)
                     this.uname=result.data.msg.uname;
                 }else{
-                    this.islogin=true;
+                    this.$store.dispatch("uplogin",false)
                 }
             })
         },
         signout(){
-            var url="http://192.168.43.158:3000/user/signout";
+            var url="/user/signout";
             this.$axios.get(url).then(result=>{
                 this.$router.go(0)
             })
+        }
+    },
+    computed : {
+        islogin(){
+            /**获取store中的登录状态 */
+            return this.$store.state.islogin
         }
     },
     components:{
@@ -107,8 +114,13 @@ export default {
 </script>
 
 <style scoped>
+    .container{
+        position: relative;
+        z-index:999
+    }
     .header,.first_nav{
         display:flex;
+        overflow: hidden;
     }
     .header{
         width:100%;
@@ -215,15 +227,15 @@ export default {
     }
     .login>ul{
 	    width: 168px;
-	    position: absolute;
+	    position: fixed;
+        z-index: 999;
 	    top: 57px;
-	    left: -64px;
+	    right: 0px;
 	    background-color: #2A2A2A;
 	    font-size: 1em;
 	    box-shadow: 0px 8px 28px 1px #444;
 	    border-radius: 5px;
 	    transform-origin: center 0;
-	    z-index: 100;
 	    color:#bbb;
     }
     .login>.arr, .login>ul{
@@ -232,7 +244,7 @@ export default {
 	    overflow: hidden;
 	    transition: transform 0.3s ease,
 				opacity 0.3s ease;
-    }
+    } 
     .login:hover>.arr, .login:hover>ul{
 	    transform:scaleY(1);
 	    opacity: 1;

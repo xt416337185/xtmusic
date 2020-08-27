@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="container">
         <div class="banner_bg">
 	        <div id="banner" class="banner" >
 		        <div class="wrap">
@@ -331,6 +331,7 @@
         </div>
     </div>
 </template>
+
 <script>
 import Header from "../components/Header";
 import Nav from "../components/nav";
@@ -357,7 +358,7 @@ export default {
 			$tbar:null,
             t$box:null,
             duration:'',
-            timer:null,
+            timem:null,
             currenttime:'',
         }
     },
@@ -371,17 +372,24 @@ export default {
         this.init();
         this.currenttime=this.gettimer(0);
     },
-    updated(){
-        this.duration=this.gettimer(this.aud.duration);
+    updated () {
+        this.duration = this.gettimer(this.aud.duration);
+    },
+    destroyed () {
+        /**离开页面时清空定时器 */
+        clearInterval(this.timer)
+        this.timer = null
     },
     methods:{
+        /**获取轮播图信息 */
         sbimg(){
-            var url="http://192.168.43.158:3000/img/bimg"
+            var url="/img/bimg"
             this.$axios.get(url).then(result=>{
                 this.bimg=result.data.msg;
                 this.shbimg=this.bimg.slice(0,1)[0].murl
             })
         },
+        /**将轮播图改变为下一张的方法 */
         showNext(){
             if($('.active').is($('.ban img:last-child'))){
                 $('.active').removeClass('active');
@@ -395,10 +403,13 @@ export default {
             }else{
                 $('.atdots').removeClass('atdots').next().addClass('atdots')
             }
+            console.log(1)
         },
+        /**轮播图自动播放,采用定时器自动调用下一张方法 */
         showBimg(){
             this.timer=setInterval(this.showNext,4000)
         },
+        /**将轮播图换为上一张的方法*/
         showPrev(){
             if($('.active').is($('.ban img:first-child'))){
                 $('.active').removeClass('active');
@@ -413,6 +424,7 @@ export default {
                 $('.atdots').removeClass("atdots").prev().addClass("atdots");
             }
         },
+        /**鼠标进入轮播图时清除定时器（停止轮播图片转换） */
         showMousee(e){
             e.stopPropagation();
             if(this.timer!=null){
@@ -420,6 +432,7 @@ export default {
                 this.timer=null;
             }
         },
+        /**鼠标离开时启动定时器 */
         showMousel(e){
             e.stopPropagation();
             if(this.timer==null){
@@ -427,11 +440,14 @@ export default {
             } 
         },
         showBan(e){
+            /**当点击下面小点时轮播图切换为对应的轮播图片 */
             var $btn=$(e.target);
             if($btn.has([`data-toggle`])){
+                /**获取当前小点相对应的下标 */
                 var n=$btn.attr('data-toggle');
                 var lis=$btn.parent().children();
                 var bans=$('.ban').children('img');
+                /**改变当前小点的状态为活动并且改变其他小点为不活动状态 */
                 for(var i=0;i<lis.length;i++){
                     if($(lis[i]).has('.atdots')){
                         $(lis[i]).removeClass('atdots')
@@ -441,37 +457,46 @@ export default {
                     }
                 }
                 $btn.addClass('atdots');
+                /**改变活动小点对应的轮播图 */
                 $(bans[n-1]).addClass('active')
             }
         },
+        /**获取图片信息 */
         srimg(){
-            var url="http://192.168.43.158:3000/img/rimg"
+            var url="/img/rimg"
             this.$axios.get(url).then(result=>{
                 this.rimg=result.data.msg;
             })
         },
+        /**利用分页查询获取歌手列表信息 */
         snimg(pno,pageSize){
-            var url=`http://192.168.43.158:3000/img/nimg?pno=${pno}&pageSize=${pageSize}`;
+            var url=`/img/nimg?pno=${pno}&pageSize=${pageSize}`;
             this.$axios.get(url).then(result=>{
                 this.nimg=result.data.data;
                 this.pnimg=parseInt((result.data.pageCount-1));
             })
         },
+        /**点击下面小点获取当前的页面数 */
         ndotClick(e){
             var $li=$(e.target)
+            /**利用冒泡在父元素上设置点击方法 */
             if($li.prop('nodeName')=='LI'){
+                /**获取当前小点对应的页面数 */
                 var n=$li.index()+1;
                 var lists=$li.parent().children();
+                /**给当前小点加活动状态给其他小点改为不活动状态 */
                 for(var list of lists){
                     if($(list).has('.acdot')){
                         $(list).removeClass('acdot')
                     }
                 };
                 $li.addClass('acdot');
+                /**将页面和也大小传个分页查询的方法 */
                 this.snimg(n,9);
             }
             
         },
+        /**设置mv图片点击翻转，并且翻转的方向随机*/
         showMv(){
             var self=this
             $('.mv .mv_item_cont').each(function(){
@@ -481,10 +506,12 @@ export default {
                 });
             })
         },
+        /**点击左右按钮实现mv的翻转，并且设置mv的正反页 */
         clickshowMv(){
             this.showMv();
             this.direction=this.direction==1?0:1
         },
+        /**初始化音乐播放器需要用到的数据 */
         init(){
             this.$tri_up=$('.trigger_up');
             this.$pb_box=$('.playbar_box');
@@ -497,6 +524,7 @@ export default {
             this.$box=this.$dot.parent(),
             this.dotleft=-5
         },
+        /**设置下面播放栏的显示和隐藏 */
         mouseShow(){
             this.$tri_up.hide();
 		    this.$pbar.css({bottom : 0});
@@ -507,51 +535,63 @@ export default {
 		    this.$pbar.css({bottom : '-55px'});
 		    this.$pb_box.css({bottom : '-70px'});   
         },
+        /**音乐自动播放 */
         autoPlay(){
             this.dotleft+=(1/this.aud.duration)*525;
             this.changedot(this.dotleft);
+            /**获取当前歌曲的时间并且传个设置时间格式的方法 */
             this.currenttime=this.gettimer(this.aud.currentTime);
+            /**当歌曲自动播放完毕改变歌曲的状态 */
             if(this.aud.ended){
                 this.$pause.children('i').toggleClass('pau_icon').toggleClass('play_icon');
-                clearInterval(this.timer);
-                this.timer=null;
+                clearInterval(this.timem);
+                this.timem=null;
             }
         },
+        /**音乐播放暂停功能 */
         player(e){
            var aud=document.getElementById("aud");
            $(e.target).toggleClass('pau_icon').toggleClass('play_icon')
+           /**点击时判断当前歌曲为播放或者暂停状态并且改变其状态和相应图标 */
             if(aud.paused){
                 aud.play();
-                this.timer=setInterval(this.autoPlay,1000);
+                this.timem=setInterval(this.autoPlay,1000);
             }else{
                 aud.pause();
-                clearInterval(this.timer);
-                this.timer=null;
+                clearInterval(this.timem);
+                this.timem=null;
             }
             this.duration=this.gettimer(this.aud.duration);           
         },
+        /**改变音乐播放时播放条前点的位置 */
         changedot(){
             this.$dot.css('left',this.dotleft);
             var cb_width = (this.dotleft + 5) * 100 / 525 + "%";
             this.$cbar.css('width',cb_width)
         },
+        /**改变音乐播放进度条的位置 */
         changeProcess(e){
+            /**手动点击进度条改变播放的进度时间 */
             this.dotleft=e.offsetX  - this.$dot.width() / 2;
             var progress=(this.dotleft+5)/525
             this.changedot();
             this.aud.currentTime=progress*this.aud.duration;
+            /**手动改变进度条的位置时将歌曲当前时间改变 并且将剩余时间传给设置时间格式的方法 */
             this.currenttime=this.gettimer(this.aud.currentTime);
             if(this.aud.ended){
+                /**自动播放完毕改变播放和暂停按钮并且清除自动播放定时器 */
                 this.$pause.children('i').toggleClass('pau_icon').toggleClass('play_icon');
-                clearInterval(this.timer);
-                this.timer=null;
+                clearInterval(this.timem);
+                this.timem=null;
 			} 
         },
         gettimer(time){
+            /**音乐播放改变音乐剩余的时间 */
             var currentTime=time|0;
             var ct_s=(100+currentTime%60+'').slice(1);
             var ct_m=(100+((currentTime-currentTime%60)/60)%60+'').slice(1);
             var ct_h;
+            /**设置音乐剩余时间的格式为00：00：00或者00：00 */
             if(Math.floor(currentTime/3600)>0){
                 ct_h=(100+Math.floor(currentTime/3600)+'').slice(1);
             }  
@@ -1069,7 +1109,7 @@ export default {
     }
     .playbar_bg>.trigger_up{
         position: absolute;
-        z-index: 9999;
+        z-index: 999;
         width:100%;
         height:20px;
         background:transparent;

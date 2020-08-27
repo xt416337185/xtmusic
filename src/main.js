@@ -5,15 +5,19 @@ import App from './App'
 import router from './router'
 import axios from 'axios'
 import $ from 'jquery'
+import Vuex from 'vuex'
+import store from './store/store'
 
 Vue.config.productionTip = false
-Vue.prototype.$axios=axios;
+axios.defaults.baseURL = 'http://127.0.0.1:3000'
 axios.defaults.withCredentials=true;
+Vue.prototype.$axios=axios;
 
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
   router,
+  store,
   components: { App },
   template: '<App/>'
 })
